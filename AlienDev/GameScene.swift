@@ -23,7 +23,7 @@ class GameScene: SKScene {
         
         self.addChild(alienDev!)
         
-        let title = createTextNode(text: "Welcome to Alien Dev", nodeName: "titleNode", position: CGPoint(x: self.frame.midX, y: self.frame.midY + 160))
+        let title = createTextNode(text: "Welcome to Alien Dev", nodeName: "titleNode", position: CGPoint(x: self.frame.midX, y: self.frame.maxY - 50))
         self.addChild(title)
     }
     
@@ -42,13 +42,13 @@ class GameScene: SKScene {
         evilBug.size = CGSize(width: 220, height: 120)
         
         
-        let minX = (evilBug.size.width / 2)
-        let maxX = (self.frame.size.width - evilBug.size.width)
+        let minX = (self.frame.minX + evilBug.size.width / 2)
+        let maxX = (self.frame.maxX - evilBug.size.width)
         let rangeX : UInt32 = UInt32(maxX - minX)
         
         let finalX = Int(arc4random() % rangeX) + Int(minX)
         
-        evilBug.position = CGPoint(x: CGFloat(finalX), y: self.frame.size.height + evilBug.size.height/2)
+        evilBug.position = CGPoint(x: CGFloat(finalX), y: self.frame.maxY + evilBug.size.height/2)
         self.addChild(evilBug)
         
         let minDuration : Int = 3
@@ -57,14 +57,24 @@ class GameScene: SKScene {
         
         let finalDuration = Int(arc4random() % rangeDuration) + minDuration
         
-        let actionMove = SKAction.move(to: CGPoint(x: CGFloat(finalX), y: -evilBug.size.height/2), duration:TimeInterval(finalDuration))
+        let actionMove = SKAction.move(to: CGPoint(x: CGFloat(finalX), y: self.frame.minY - evilBug.size.height / 2), duration:TimeInterval(finalDuration))
         let actionMoveDone = SKAction.removeFromParent()
         
         evilBug.run(SKAction.sequence([actionMove, actionMoveDone]))
     }
 
     func updateWithTimeSinceLastUpdate(timeSinceLast: CFTimeInterval) {
-        
+        if let lastSpawn = lastSpawnTimeInterval {
+            lastSpawnTimeInterval! += timeSinceLast
+            if (lastSpawnTimeInterval! > 1) {
+                lastSpawnTimeInterval = 0
+                createBug()
+            }
+        }
+        else
+        {
+            lastSpawnTimeInterval = 0
+        }
     }
     
     override func update(_ currentTime: TimeInterval) {
